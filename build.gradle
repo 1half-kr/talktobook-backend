@@ -1,0 +1,89 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.10'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.lifelibrarians'
+version = '0.0.1-SNAPSHOT'
+
+java.sourceCompatibility = '11'
+
+bootRun {
+    environment SPRING_PROFILES_ACTIVE: environment.SPRING_PROFILES_ACTIVE ?: 'local'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+
+    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+
+    // AWS
+    implementation platform("software.amazon.awssdk:bom:2.25.40")
+    implementation "software.amazon.awssdk:ses"
+    implementation "software.amazon.awssdk:s3"
+    implementation platform("org.springframework.cloud:spring-cloud-dependencies:2021.0.8")
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // LocalStack 의존성: local, test 프로필에서만 추가
+    if (project.hasProperty('local') || project.hasProperty('test')) {
+        testImplementation 'org.testcontainers:localstack:1.16.0'
+    }
+    implementation 'com.amazonaws:aws-java-sdk-lambda:1.11.648'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+
+    // Monitoring - Prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-core:1.11.2'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    implementation 'org.mariadb.jdbc:mariadb-java-client'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.junit.platform:junit-platform-suite-api:1.9.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-suite-engine:1.9.3'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+    testRuntimeOnly 'com.h2database:h2'
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // queue
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+    // PDF generation
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.xhtmlrenderer:flying-saucer-pdf:9.1.22'
+}
+
+test {
+    environment 'SPRING_PROFILES_ACTIVE', 'test'
+    useJUnitPlatform()
+}

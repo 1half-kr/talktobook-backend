@@ -1,0 +1,47 @@
+version: "3"
+
+services:
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MARIADB_USER: lifebookshelf
+      MARIADB_PASSWORD: password
+      MARIADB_DATABASE: lifebookshelf
+      MARIADB_ROOT_PASSWORD: password
+      MYSQL_TCP_PORT: 3306
+      MYSQL_UNIX_PORT: 3306
+    ports:
+      - 3311:3306
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "--silent",
+          "-h",
+          "localhost",
+          "-u",
+          "lifebookshelf",
+          "-ppassword",
+        ]
+      timeout: 20s
+      retries: 10
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES=s3
+      - DATA_DIR=/tmp/localstack/data
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - CLEAR_TMP_FOLDER=0
+    ports:
+      - 4566:4566
+      - 4571:4571
+    volumes:
+      - './localstack:/tmp/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - './aws:/etc/localstack/init/ready.d'

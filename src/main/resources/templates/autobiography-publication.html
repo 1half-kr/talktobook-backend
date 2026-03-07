@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 35mm 40mm; /* 상하 35mm / 좌우 40mm */
+        }
+
+        body {
+            font-family: 'NanumGothic', sans-serif;
+            -fs-font-subset: complete-font;
+            line-height: 1.75;
+            color: #000;
+        }
+
+        .page {
+            page-break-after: always;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===========================
+           (1) 표지
+        ============================ */
+        .cover-page {
+            text-align: center;
+            font-size: 21pt;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cover-title {
+            margin-top: 2em; /* 위에서 두 줄 띄우기 */
+            font-size: 21pt;
+            font-weight: bold;
+        }
+
+        .cover-sub {
+            margin-top: 2em; /* 두 줄 띄우고 "OOO의 이야기" */
+            font-size: 21pt;
+        }
+
+        .cover-symbol {
+            margin-top: 2em; /* 두 줄 띄우고 ✣✤✣ */
+            font-size: 21pt;
+        }
+
+        /* ===========================
+           (2~N) 챕터 페이지
+        ============================ */
+        .chapter-title {
+            font-size: 21pt;
+            font-weight: bold;
+            margin-bottom: 2em; /* 제목 + 두 줄 띄우기 */
+            color: #000;
+        }
+
+        .chapter-content {
+            font-size: 16pt;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .chapter-block {
+            margin-bottom: 3em; /* 챕터 끝 + 세 줄 띄우기 */
+        }
+
+        /* ===========================
+           하단 페이지 번호 (표지 제외)
+        ============================ */
+        .footer-page-number {
+            position: absolute;
+            bottom: 10mm;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12pt;
+        }
+
+        /* ===========================
+           빈 페이지의 로고 전용 페이지
+        ============================ */
+        .empty-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .empty-logo {
+            width: 40mm;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===========================
+     (1) 표지
+=========================== -->
+<div class="page cover-page">
+    <div class="cover-title"></div>
+
+    <div class="cover-sub" th:text="${autobiography.title}">
+        000의 자서전
+    </div>
+
+    <div class="cover-symbol">✣</div>
+    <div class="cover-symbol">✤</div>
+    <div class="cover-symbol">✣</div>
+</div>
+
+<!-- ===========================
+     (2~N) 본문 (책자 규칙)
+=========================== -->
+<div th:each="chapter, idx : ${chapters}" class="page chapter-page">
+
+    <div class="chapter-block">
+        <div class="chapter-title" th:text="${chapter.title}">제목</div>
+        <div class="chapter-content" th:text="${chapter.content}"></div>
+    </div>
+
+    <!-- 페이지 번호: 표지 제외, 2페이지부터 시작 -->
+    <div class="footer-page-number" th:text="${idx.index + 2}"></div>
+</div>
+</body>
+</html>

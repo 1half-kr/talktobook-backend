@@ -1,0 +1,71 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        globally_quoted_identifiers: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+cloud:
+  aws:
+    s3:
+      bucket: lifebookshelf-image-bucket
+      endpoint: http://localhost:4566
+      expiration: 3600000
+    credentials:
+      access-key: test
+      secret-key: test
+    region:
+      static: us-east-1
+    stack:
+      auto: false
+
+jwt:
+  key: blablablablablablablablablablablabla
+  expiration:
+    # 7일
+    access-token: 604800000
+    # 30일
+    refresh-token: 2592000000
+
+#Logging
+logging:
+  level:
+    com.lifelibrarians.lifebookshelf: DEBUG
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: ERROR
+    org.springframework.boot.autoconfigure.orm.jpa.JpaBaseConfiguration: ERROR
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+#Monitoring - Prometheus
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+swagger:
+  base-url: http://localhost:8080
+
+images:
+  path:
+    profile: profile-images/
+    bio-cover: bio-cover-images/
+    book-cover: book-cover-images/

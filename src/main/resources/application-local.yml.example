@@ -63,6 +63,7 @@ logging:
   level:
     com.lifelibrarians.lifebookshelf: DEBUG
 
+# port delete
 #Monitoring - Prometheus
 management:
   endpoints:

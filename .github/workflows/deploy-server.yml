@@ -71,7 +71,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "cd /opt/deploy",
-              "aws s3 cp s3://talktobook-deploy/docker-compose.server.prod.yml .",
+              "aws s3 cp s3://talktobook-deploy/docker-compose.prod.yml .",
               "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}",
               "cat > .env << EOF",
               "ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}",
@@ -86,9 +86,9 @@ jobs:
               "REDIS_HOST=${{ secrets.REDIS_HOST }}",
               "REDIS_PORT=${{ secrets.REDIS_PORT }}",
               "EOF",
-              "docker compose -f docker-compose.server.prod.yml pull",
-              "docker compose -f docker-compose.server.prod.yml down",
-              "docker compose -f docker-compose.server.prod.yml up -d",
+              "docker compose -f docker-compose.prod.yml pull",
+              "docker compose -f docker-compose.prod.yml down",
+              "docker compose -f docker-compose.prod.yml up -d",
               "docker image prune -f"
             ]' \
             --instance-ids ${{ secrets.SERVER_INSTANCE_ID }} \

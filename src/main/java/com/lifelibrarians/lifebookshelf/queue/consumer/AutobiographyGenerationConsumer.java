@@ -1,5 +1,6 @@
 package com.lifelibrarians.lifebookshelf.queue.consumer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lifelibrarians.lifebookshelf.autobiography.domain.Autobiography;
 import com.lifelibrarians.lifebookshelf.autobiography.domain.AutobiographyChapter;
 import com.lifelibrarians.lifebookshelf.autobiography.repository.AutobiographyChapterRepository;
@@ -10,7 +11,6 @@ import com.lifelibrarians.lifebookshelf.queue.dto.response.AutobiographyGenerate
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -23,18 +23,29 @@ public class AutobiographyGenerationConsumer {
     private final AutobiographyRepository autobiographyRepository;
     private final MemberRepository memberRepository;
     private final AutobiographyChapterRepository autobiographyChapterRepository;
+    private final ObjectMapper objectMapper;
 
     @SqsListener("${sqs.queue.url.autobiography-result}")
-    public void receive(@Payload AutobiographyGenerateResponseDto dto) {
-        log.info("[RECEIVE_AUTOBIOGRAPHY] 자서전 챕터 수신 - autobiographyId: {}, userId: {}, cycleId: {}, step: {}",
+    public void receive(String body) {
+        try {
+            AutobiographyGenerateResponseDto dto = objectMapper.readValue(body, AutobiographyGenerateResponseDto.class);
+            process(dto);
+        } catch (Exception e) {
+            log.error("[AUTOBIOGRAPHY_GENERATION_CONSUMER] 처리 실패: {}", e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void process(AutobiographyGenerateResponseDto dto) {
+        log.info("[AUTOBIOGRAPHY_GENERATION_CONSUMER] 챕터 수신 - autobiographyId: {}, userId: {}, cycleId: {}, step: {}",
                 dto.getAutobiographyId(), dto.getUserId(), dto.getCycleId(), dto.getStep());
 
-        LocalDateTime now = LocalDateTime.now();
-
         if (dto.getCycleId() == null || dto.getCycleId().isEmpty()) {
-            log.warn("[RECEIVE_AUTOBIOGRAPHY] cycleId 없음 - autobiographyId: {}", dto.getAutobiographyId());
+            log.warn("[AUTOBIOGRAPHY_GENERATION_CONSUMER] cycleId 없음 - autobiographyId: {}", dto.getAutobiographyId());
             return;
         }
+
+        LocalDateTime now = LocalDateTime.now();
 
         Autobiography autobiography = autobiographyRepository.findById(dto.getAutobiographyId())
                 .orElseThrow(() -> new RuntimeException("Autobiography not found: " + dto.getAutobiographyId()));
@@ -53,6 +64,6 @@ public class AutobiographyGenerationConsumer {
         );
 
         autobiographyChapterRepository.save(chapter);
-        log.info("[RECEIVE_AUTOBIOGRAPHY] 챕터 저장 완료 - chapterId: {}, step: {}", chapter.getId(), dto.getStep());
+        log.info("[AUTOBIOGRAPHY_GENERATION_CONSUMER] 챕터 저장 완료 - chapterId: {}, step: {}", chapter.getId(), dto.getStep());
     }
 }

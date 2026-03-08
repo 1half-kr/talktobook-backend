@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ public class InterviewService {
             for (AutobiographyStatus status : statusList) {
                 // creating / finish 상태 제외
                 AutobiographyStatusType type = status.getStatus();
-                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
                 // creating, finish 제외
                 if (type == AutobiographyStatusType.CREATING ||

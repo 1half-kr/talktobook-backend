@@ -31,10 +31,10 @@ jobs:
       - name: Inject production configuration
         run: |
           # Decode and inject application-prod.yml
-          echo "${{ secrets.SERVER_PROD_APPLICATION_YML }}" | base64 -d > server/src/main/resources/application-prod.yml
+          echo "${{ secrets.SERVER_PROD_APPLICATION_YML }}" | base64 -d > src/main/resources/application-prod.yml
           
           # Change active profile to prod in application.yml
-          sed -i 's/active: .*/active: prod/' server/src/main/resources/application.yml
+          sed -i 's/active: .*/active: prod/' src/main/resources/application.yml
 
       - name: Build server JAR
         working-directory: server
@@ -44,8 +44,8 @@ jobs:
     
       - name: Normalize JAR name
         run: |
-          JAR_FILE=$(find server/build/libs -name "*SNAPSHOT.jar" ! -name "*plain*" | head -n 1)
-          cp "$JAR_FILE" server/lifebookshelf.jar
+          JAR_FILE=$(find build/libs -name "*SNAPSHOT.jar" ! -name "*plain*" | head -n 1)
+          cp "$JAR_FILE" lifebookshelf.jar
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -59,12 +59,12 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -f server/deploy/Dockerfile -t ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY_SERVER }}:${{ github.sha }} .
+          docker build -f deploy/Dockerfile -t ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY_SERVER }}:${{ github.sha }} .
           docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY_SERVER }}:${{ github.sha }}
 
       - name: Upload Docker Compose to S3
         run: |
-          aws s3 cp deploy/server/docker-compose.server.prod.yml s3://talktobook-deploy/
+          aws s3 cp deploy/docker-compose.server.prod.yml s3://talktobook-deploy/
 
       - name: Deploy to EC2 via SSM
         run: |

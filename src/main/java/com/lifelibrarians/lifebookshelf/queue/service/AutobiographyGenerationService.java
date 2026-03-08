@@ -11,11 +11,9 @@ import com.lifelibrarians.lifebookshelf.interview.repository.ConversationReposit
 import com.lifelibrarians.lifebookshelf.member.domain.Member;
 import com.lifelibrarians.lifebookshelf.member.repository.MemberRepository;
 import com.lifelibrarians.lifebookshelf.queue.dto.request.AutobiographyGenerateRequestDto;
+import com.lifelibrarians.lifebookshelf.queue.publisher.AutobiographyGeneratePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +30,9 @@ public class AutobiographyGenerationService {
     private final AutobiographyRepository autobiographyRepository;
     private final ConversationRepository conversationRepository;
     private final MemberRepository memberRepository;
-    private final RabbitTemplate rabbitTemplate;
-    
+    private final AutobiographyGeneratePublisher autobiographyGeneratePublisher;
+
     private static final int BATCH_SIZE = 10; // 한 번에 처리할 conversation 수
-    private static final String AUTOBIOGRAPHY_GENERATION_QUEUE = "autobiography.generation.queue";
     
     @Transactional(readOnly = true)
     public void processCreatingStatus(Long memberId) {
@@ -125,7 +122,7 @@ public class AutobiographyGenerationService {
             .build();
         
         // 큐에 발행
-        rabbitTemplate.convertAndSend(AUTOBIOGRAPHY_GENERATION_QUEUE, request);
+        autobiographyGeneratePublisher.publishGenerateAutobiographyRequest(request);
         log.info("[PUBLISH_BATCH] 배치 발행 완료 - autobiographyId: {}, answersCount: {}", autobiographyId, answers.size());
     }
     

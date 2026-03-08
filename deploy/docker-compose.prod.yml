@@ -7,8 +7,6 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    volumes:
-      - /var/log/spring-boot:/var/log/spring-boot
     networks:
       - talktobook-server-network
   

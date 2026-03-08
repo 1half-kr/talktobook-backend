@@ -5,4 +5,5 @@ ENV TZ=Asia/Seoul
 # 항상 동일한 이름의 JAR만 COPY
 COPY lifebookshelf.jar lifebookshelf.jar
 
-CMD ["java", "-jar", "-Dspring.profiles.active=prod", "lifebookshelf.jar"]
+ENTRYPOINT ["java"]
+CMD ["-Dspring.profiles.active=prod", "-jar", "lifebookshelf.jar"]

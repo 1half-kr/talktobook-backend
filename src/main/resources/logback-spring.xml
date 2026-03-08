@@ -13,23 +13,15 @@
         </root>
     </springProfile>
 
-    <!-- prod: JSON 포맷 (Loki 구조화 파싱용) -->
+    <!-- prod: 일반 텍스트 콘솔 출력 (임시) -->
     <springProfile name="prod">
-        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <includeContext>false</includeContext>
-                <fieldNames>
-                    <timestamp>timestamp</timestamp>
-                    <message>message</message>
-                    <logger>logger</logger>
-                    <thread>thread</thread>
-                    <level>level</level>
-                    <levelValue>[ignore]</levelValue>
-                </fieldNames>
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
             </encoder>
         </appender>
         <root level="INFO">
-            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="CONSOLE"/>
         </root>
         <logger name="com.lifelibrarians.lifebookshelf" level="INFO"/>
     </springProfile>

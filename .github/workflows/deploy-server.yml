@@ -37,7 +37,6 @@ jobs:
           sed -i 's/active: .*/active: prod/' src/main/resources/application.yml
 
       - name: Build server JAR
-        working-directory: server
         run: |
           chmod +x gradlew
           ./gradlew clean bootJar -x test

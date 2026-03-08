@@ -4,6 +4,8 @@ import com.lifelibrarians.lifebookshelf.auth.jwt.JwtAuthenticationConverter;
 import com.lifelibrarians.lifebookshelf.auth.jwt.JwtRedisValidator;
 import com.lifelibrarians.lifebookshelf.auth.jwt.MemberSessionAuthenticationFilter;
 import java.util.List;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -66,7 +69,7 @@ public class SecurityConfig {
 					.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				.and()
 				.oauth2ResourceServer()
-					.bearerTokenResolver(new DefaultBearerTokenResolver())
+					.bearerTokenResolver(publicEndpointAwareBearerTokenResolver())
 					.jwt()
 						.jwtAuthenticationConverter(jwtAuthenticationConverter)
 						.decoder(jwtDecoder)
@@ -81,6 +84,26 @@ public class SecurityConfig {
 					)
 				.build();
 //      @formatter:on
+	}
+
+	@Bean
+	public BearerTokenResolver publicEndpointAwareBearerTokenResolver() {
+		DefaultBearerTokenResolver delegate = new DefaultBearerTokenResolver();
+		Set<String> publicPaths = Set.of(
+				"/api/v2/auth/email-login",
+				"/api/v2/auth/email-register",
+				"/api/v2/auth/email-verify",
+				"/api/v2/auth/reset-password",
+				"/api/v2/auth/reissue",
+				"/api/v2/auth/email-rejoin",
+				"/api/v2/auth/resend-code"
+		);
+		return (HttpServletRequest request) -> {
+			if (publicPaths.contains(request.getRequestURI())) {
+				return null;
+			}
+			return delegate.resolve(request);
+		};
 	}
 
 	@Bean

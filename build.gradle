@@ -76,7 +76,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // queue - SQS
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws-messaging'
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws-messaging:2.2.6.RELEASE'
 
     // PDF generation
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'

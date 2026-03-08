@@ -1,0 +1,26 @@
+services:
+  server-main:
+    image: "${ECR_REGISTRY}/${ECR_REPOSITORY_SERVER}:${IMAGE_TAG}"
+    restart: always
+    container_name: "talktobook-main"
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - /var/log/spring-boot:/var/log/spring-boot
+    networks:
+      - talktobook-server-network
+  
+  server-redis:
+    image: "redis:latest"
+    restart: always
+    container_name: "talktobook-redis"
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - talktobook-server-network
+
+networks:
+  talktobook-server-network:
+    driver: bridge

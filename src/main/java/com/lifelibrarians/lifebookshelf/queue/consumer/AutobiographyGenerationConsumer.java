@@ -9,7 +9,8 @@ import com.lifelibrarians.lifebookshelf.member.repository.MemberRepository;
 import com.lifelibrarians.lifebookshelf.queue.dto.response.AutobiographyGenerateResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -23,20 +24,13 @@ public class AutobiographyGenerationConsumer {
     private final MemberRepository memberRepository;
     private final AutobiographyChapterRepository autobiographyChapterRepository;
 
-    @RabbitListener(queues = "autobiography.trigger.result.queue")
-    public void receive(AutobiographyGenerateResponseDto dto) {
-        log.info("[RECEIVE_AUTOBIOGRAPHY] 자서전 챕터 수신 - autobiographyId: {}, userId: {}, cycleId: {}, step: {}", 
+    @SqsListener("${sqs.queue.url.autobiography-result}")
+    public void receive(@Payload AutobiographyGenerateResponseDto dto) {
+        log.info("[RECEIVE_AUTOBIOGRAPHY] 자서전 챕터 수신 - autobiographyId: {}, userId: {}, cycleId: {}, step: {}",
                 dto.getAutobiographyId(), dto.getUserId(), dto.getCycleId(), dto.getStep());
-        
+
         LocalDateTime now = LocalDateTime.now();
 
-        // Aggregator에서 온 메시지인지 확인 (title, content가 없으면 Aggregator 메시지)
-        if (dto.getTitle() == null && dto.getContent() == null) {
-            log.warn("[RECEIVE_AUTOBIOGRAPHY] Aggregator 메시지 거부 - autobiographyId: {}", dto.getAutobiographyId());
-            return;
-        }
-
-        // cycleId가 없으면 메시지 거부 (새로운 사이클 관리 시스템 필수)
         if (dto.getCycleId() == null || dto.getCycleId().isEmpty()) {
             log.warn("[RECEIVE_AUTOBIOGRAPHY] cycleId 없음 - autobiographyId: {}", dto.getAutobiographyId());
             return;
@@ -48,11 +42,10 @@ public class AutobiographyGenerationConsumer {
         Member member = memberRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Member not found: " + dto.getUserId()));
 
-        // autobiography에 대한 chapter 생성
         AutobiographyChapter chapter = AutobiographyChapter.of(
                 dto.getTitle(),
                 dto.getContent(),
-                null, // step을 chapterOrder로 사용
+                null,
                 now,
                 now,
                 member,

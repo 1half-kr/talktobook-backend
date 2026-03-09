@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
-	@Query("select c from Conversation c where c.interview.id = :interviewId")
+	@Query("select c from Conversation c where c.interview.id = :interviewId order by c.id asc")
 	Page<Conversation> findAllByInterviewId(Long interviewId, Pageable pageable);
 	
 	@Query("select c from Conversation c where c.interview.autobiography.member.id = :memberId and c.conversationType = :conversationType")

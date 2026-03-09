@@ -53,7 +53,7 @@ public class InterviewController {
 			@LoginMemberInfo MemberSessionDto memberSessionDto,
 			@PathVariable("interviewId") @Parameter(description = "인터뷰 ID", example = "1") Long interviewId,
 			@RequestParam(value = "page", defaultValue = "0") int page,
-			@RequestParam(value = "size", defaultValue = "10") int size
+			@RequestParam(value = "size", defaultValue = "100") int size
 	) {
 		return interviewFacadeService.getConversations(memberSessionDto.getMemberId(), interviewId,
 				PageRequest.of(page, size));

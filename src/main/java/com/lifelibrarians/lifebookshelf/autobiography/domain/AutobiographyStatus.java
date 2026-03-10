@@ -64,5 +64,9 @@ public class AutobiographyStatus {
         this.status = status;
         this.updatedAt = now;
     }
+    
+    public void updateCurrentAutobiography(Autobiography currentAutobiography) {
+        this.currentAutobiography = currentAutobiography;
+    }
     /* } 비즈니스 메서드 */
 }

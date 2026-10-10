@@ -2,6 +2,7 @@ spring:
   config:
     activate:
       on-profile: local
+  # 1. 로컬 MariaDB (docker compose, 3311)
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3311/talktobook?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
@@ -24,15 +25,13 @@ spring:
         format_sql: true
         show_sql: true
         dialect: org.hibernate.dialect.MariaDBDialect
+  # 2. 로컬 Redis
   redis:
     host: localhost
     port: 6381
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: talktobook
-    password: talktobook_password
 
+# 3. S3 (LocalStack)
+# 4. aws access/secret credentials (LocalStack용 더미 값)
 cloud:
   aws:
     s3:
@@ -50,6 +49,7 @@ cloud:
     stack:
       auto: false
 
+# 5. jwt (로컬 개발용 값. AI 서버 LIFE_BOOKSHELF_AI_JWT_SECRET_KEY와 같아야 함)
 jwt:
   key: 0190ab45-7e42-7a3f-9dec-726ddf778076
   expiration:
@@ -63,24 +63,46 @@ logging:
   level:
     com.lifelibrarians.lifebookshelf: DEBUG
 
-# port delete
-#Monitoring - Prometheus
+#Monitoring - Prometheus (prod와 같은 구조)
 management:
+  endpoint:
+    info:
+      enabled: true
+    health:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    enable:
+      all: false # Disable all metrics by default
+      jvm: true # JVM metrics, such as memory usage
+      system: true # System metrics, such as CPU usage
+      process: true # Process metrics, like files, uptime
+      log4j2: true # If you are using Log4j2
+      hikaricp: true # HikariCP connection pool metrics
+      tomcat: true # If you are using Tomcat
+      http: true # HTTP server requests
   endpoints:
+    # 화이트리스트 식 관리를 위해 기본적으로 비활성화 시킵니다.
+    enabled-by-default: false
+    # 잠재적 위험성이 있는 jmx 엔드포인트를 비활성화 시킵니다.
+    jmx:
+      exposure:
+        exclude: "*"
     web:
       base-path: /actuator
       exposure:
-        include: "*"
-  metrics:
-    export:
-      prometheus:
-        enabled: true
+        # 필요한 엔드포인트만 노출합니다.
+        include: prometheus,health,info
+        # 절대 노출해서는 안되는 엔드포인트입니다.
+        exclude: env,heapdump,threaddump,configprops,quartz
 
 springdoc:
   swagger-ui:
     try-it-out-enabled: true
     use-root-path: true
 
+# 6. 로컬 CORS
 security:
   cors:
     domain: http://localhost:8080
@@ -89,8 +111,23 @@ security:
     android: myapp://callback
     ios: myapp://callback
 
+# 7. s3 값 저장용 path
 images:
   path:
     profile: profile-images/
     bio-cover: bio-cover-images/
     book-cover: book-cover-images/
+
+# 8. sqs - 메시지큐 url (8개 모두 필수. 없으면 애플리케이션 기동 실패)
+# LocalStack 예시 값. 로컬에서 운영 큐 URL을 쓰지 않는다 (운영 메시지를 로컬이 소비하게 됨)
+sqs:
+  queue:
+    url:
+      autobiography-trigger: http://localhost:4566/000000000000/autobiography-trigger
+      autobiography-cycle-init: http://localhost:4566/000000000000/autobiography-cycle-init
+      autobiography-result: http://localhost:4566/000000000000/autobiography-result
+      autobiography-cycle-merge: http://localhost:4566/000000000000/autobiography-cycle-merge
+      interview-summary: http://localhost:4566/000000000000/interview-summary
+      interview-summary-result: http://localhost:4566/000000000000/interview-summary-result
+      interview-meta: http://localhost:4566/000000000000/interview-meta
+      ai-persistence: http://localhost:4566/000000000000/ai-persistence

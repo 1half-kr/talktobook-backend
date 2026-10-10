@@ -15,7 +15,7 @@ services:
     restart: always
     container_name: "talktobook-redis"
     ports:
-      - "${REDIS_PORT}:6379"
+      - "6379"
     networks:
       - talktobook-server-network
 
